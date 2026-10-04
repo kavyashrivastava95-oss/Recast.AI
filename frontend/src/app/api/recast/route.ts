@@ -48,9 +48,12 @@ export async function POST(req: NextRequest) {
 
     // 1. Try forwarding to the Python FastAPI backend
     try {
-      const backendUrl = process.env.BACKEND_URL || "http://127.0.0.1:8001/api/parse";
+      let backendUrl = process.env.BACKEND_URL || "http://127.0.0.1:8001";
+      if (!backendUrl.endsWith("/api/parse")) {
+        backendUrl = `${backendUrl.replace(/\/+$/, "")}/api/parse`;
+      }
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2500);
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
 
       const pyRes = await fetch(backendUrl, {
         method: "POST",
