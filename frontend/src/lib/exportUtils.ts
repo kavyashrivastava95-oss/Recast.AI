@@ -125,6 +125,47 @@ export function exportToExcel(
 
   xml += `  </Table>
  </Worksheet>
+ <Worksheet ss:Name="Name_Analysis_1st_Mid_Last">
+  <Table ss:DefaultRowHeight="20">
+   <Column ss:Width="130"/>
+   <Column ss:Width="100"/>
+   <Column ss:Width="180"/>
+   <Column ss:Width="130"/>
+   <Column ss:Width="130"/>
+   <Column ss:Width="140"/>
+   <Column ss:Width="90"/>
+   <Column ss:Width="160"/>
+   <Column ss:Width="100"/>
+   <Row ss:Height="24">
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Record ID</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Entity Type</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Full Name Clean</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">1st Name (Given)</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Middle Name</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Last Name (Surname)</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Salutation</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Relationship / Care-Of</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Confidence</Data></Cell>
+   </Row>
+`;
+
+  records.forEach((r, idx) => {
+    const styleId = idx % 2 === 0 ? "Data" : "DataEven";
+    xml += `   <Row ss:Height="20">\n`;
+    xml += `    <Cell ss:StyleID="${styleId}"><Data ss:Type="String">${escapeXml(r.record_id)}</Data></Cell>\n`;
+    xml += `    <Cell ss:StyleID="${styleId}"><Data ss:Type="String">${escapeXml(r.entity_type)}</Data></Cell>\n`;
+    xml += `    <Cell ss:StyleID="${styleId}"><Data ss:Type="String">${escapeXml(r.full_name_clean)}</Data></Cell>\n`;
+    xml += `    <Cell ss:StyleID="${styleId}"><Data ss:Type="String">${escapeXml(r.first_name || "")}</Data></Cell>\n`;
+    xml += `    <Cell ss:StyleID="${styleId}"><Data ss:Type="String">${escapeXml(r.middle_name || "")}</Data></Cell>\n`;
+    xml += `    <Cell ss:StyleID="${styleId}"><Data ss:Type="String">${escapeXml(r.last_name || "")}</Data></Cell>\n`;
+    xml += `    <Cell ss:StyleID="${styleId}"><Data ss:Type="String">${escapeXml(r.salutation || "")}</Data></Cell>\n`;
+    xml += `    <Cell ss:StyleID="${styleId}"><Data ss:Type="String">${escapeXml(r.relationship || "")}</Data></Cell>\n`;
+    xml += `    <Cell ss:StyleID="Confidence"><Data ss:Type="Number">${r.confidence_score}</Data></Cell>\n`;
+    xml += `   </Row>\n`;
+  });
+
+  xml += `  </Table>
+ </Worksheet>
 </Workbook>`;
 
   const blob = new Blob([xml], {
@@ -152,6 +193,11 @@ export function exportToCsv(
     "record_id",
     "entity_type",
     "full_name_clean",
+    "first_name",
+    "middle_name",
+    "last_name",
+    "salutation",
+    "relationship",
     "tax_id",
     "address_line1",
     "address_line2",

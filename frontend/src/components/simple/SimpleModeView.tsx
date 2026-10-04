@@ -12,9 +12,11 @@ import {
   Sliders,
   Check,
   FileSpreadsheet,
+  User,
 } from "lucide-react";
 import { CleanEnterpriseRecord11Col, EnterpriseSample } from "@/lib/types";
 import { exportToExcel, exportToCsv, exportToJson } from "@/lib/exportUtils";
+import { decomposeName } from "@/lib/nameUtils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -47,7 +49,28 @@ export const SimpleModeView: React.FC<SimpleModeViewProps> = ({
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeSheet, setActiveSheet] = useState<"11col" | "nameAnalysis">("11col");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const getRecordNameInfo = (r: CleanEnterpriseRecord11Col) => {
+    if (r.first_name || r.last_name) {
+      return {
+        firstName: r.first_name || "",
+        middleName: r.middle_name || "",
+        lastName: r.last_name || "",
+        salutation: r.salutation || "",
+        relationship: r.relationship || "",
+      };
+    }
+    const decomp = decomposeName(r.full_name_clean, r.entity_type);
+    return {
+      firstName: decomp.first_name,
+      middleName: decomp.middle_name,
+      lastName: decomp.last_name,
+      salutation: decomp.salutation,
+      relationship: decomp.relationship,
+    };
+  };
 
   const handleFileDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -342,8 +365,35 @@ export const SimpleModeView: React.FC<SimpleModeViewProps> = ({
             </div>
 
             {/* Toolbar Actions */}
-            <div className="flex items-center gap-2">
-              <div className="relative w-44 sm:w-52">
+            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+              {/* Sheet Switcher */}
+              <div className="flex items-center bg-stone-200/80 p-0.5 rounded-lg border border-stone-300">
+                <button
+                  type="button"
+                  onClick={() => setActiveSheet("11col")}
+                  className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
+                    activeSheet === "11col"
+                      ? "bg-white text-stone-900 shadow-xs border border-stone-200/80"
+                      : "text-stone-600 hover:text-stone-900"
+                  }`}
+                >
+                  11-Schema
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveSheet("nameAnalysis")}
+                  className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition-all cursor-pointer flex items-center gap-1 ${
+                    activeSheet === "nameAnalysis"
+                      ? "bg-emerald-700 text-white shadow-xs"
+                      : "text-stone-600 hover:text-stone-900"
+                  }`}
+                >
+                  <User className="w-3 h-3" />
+                  <span>1st / Mid / Last</span>
+                </button>
+              </div>
+
+              <div className="relative w-36 sm:w-48">
                 <Search className="w-3.5 h-3.5 text-stone-400 absolute left-2.5 top-2 pointer-events-none" />
                 <input
                   type="text"
@@ -358,7 +408,7 @@ export const SimpleModeView: React.FC<SimpleModeViewProps> = ({
                 onClick={handleExportExcelDirect}
                 size="sm"
                 className="h-7 px-2.5 text-xs bg-emerald-700 hover:bg-emerald-800 text-white border border-emerald-800 shadow-xs gap-1 font-semibold"
-                title="Download this exact Excel sheet"
+                title="Download this exact Excel sheet with both sheets"
               >
                 <Download className="w-3 h-3 text-emerald-200" />
                 <span>Export</span>
@@ -381,159 +431,427 @@ export const SimpleModeView: React.FC<SimpleModeViewProps> = ({
             <span className="font-bold text-stone-700 select-none">fx</span>
             <div className="h-3.5 w-[1px] bg-stone-300" />
             <span className="text-stone-500 truncate">
-              =RECAST_CLEAN_SCHEMA(source: &quot;legacy_data&quot;, columns: 11, status: &quot;VALIDATED&quot;)
+              {activeSheet === "11col"
+                ? '=RECAST_CLEAN_SCHEMA(source: "legacy_data", columns: 11, status: "VALIDATED")'
+                : '=ANALYZE_NAME_COMPONENTS(entity: "INDIVIDUAL", fields: ["1st_name", "middle_name", "last_name", "salutation", "relationship"])'}
             </span>
           </div>
 
           {/* Excel Sheet Grid */}
           <div className="overflow-x-auto max-h-[460px] overflow-y-auto">
-            <table className="w-full text-left text-xs border-collapse font-mono">
-              <thead>
-                {/* Excel Column Letters (A through K) */}
-                <tr className="bg-[#ece7de] text-[10px] text-stone-500 font-semibold border-b border-stone-200 select-none">
-                  <th className="w-10 py-1 px-2 text-center border-r border-stone-200/80">◿</th>
-                  <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[130px]">A</th>
-                  <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[100px]">B</th>
-                  <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[180px]">C</th>
-                  <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[130px]">D</th>
-                  <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[200px]">E</th>
-                  <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[180px]">F</th>
-                  <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[120px]">G</th>
-                  <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[130px]">H</th>
-                  <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[110px]">I</th>
-                  <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[150px]">J</th>
-                  <th className="py-1 px-3 text-center min-w-[110px]">K</th>
-                </tr>
+            {activeSheet === "11col" ? (
+              /* SHEET 1: STANDARD 11-SCHEMA VIEW WITH NAME DECOMPOSITION BADGES */
+              <table className="w-full text-left text-xs border-collapse font-mono">
+                <thead>
+                  {/* Excel Column Letters (A through K) */}
+                  <tr className="bg-[#ece7de] text-[10px] text-stone-500 font-semibold border-b border-stone-200 select-none">
+                    <th className="w-10 py-1 px-2 text-center border-r border-stone-200/80">◿</th>
+                    <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[130px]">A</th>
+                    <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[100px]">B</th>
+                    <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[220px]">C</th>
+                    <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[130px]">D</th>
+                    <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[200px]">E</th>
+                    <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[180px]">F</th>
+                    <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[120px]">G</th>
+                    <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[130px]">H</th>
+                    <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[110px]">I</th>
+                    <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[150px]">J</th>
+                    <th className="py-1 px-3 text-center min-w-[110px]">K</th>
+                  </tr>
 
-                {/* 11 Proper Schema Headers (Row 1) */}
-                <tr className="bg-[#f5f2eb] text-[11px] text-stone-800 font-bold border-b border-stone-300">
-                  <td className="w-10 py-2 px-2 text-center bg-[#ece7de] text-stone-500 text-[10px] border-r border-stone-300 font-mono select-none">
-                    1
-                  </td>
-                  <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">record_id</td>
-                  <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">entity_type</td>
-                  <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">full_name_clean</td>
-                  <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">tax_id</td>
-                  <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">address_line1</td>
-                  <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">address_line2</td>
-                  <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">city</td>
-                  <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">state_province</td>
-                  <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">postal_code</td>
-                  <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">contact_normalized</td>
-                  <td className="py-2 px-3 font-mono whitespace-nowrap text-right">confidence_score</td>
-                </tr>
-              </thead>
+                  {/* 11 Proper Schema Headers (Row 1) */}
+                  <tr className="bg-[#f5f2eb] text-[11px] text-stone-800 font-bold border-b border-stone-300">
+                    <td className="w-10 py-2 px-2 text-center bg-[#ece7de] text-stone-500 text-[10px] border-r border-stone-300 font-mono select-none">
+                      1
+                    </td>
+                    <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">record_id</td>
+                    <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">entity_type</td>
+                    <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">
+                      full_name_clean
+                      <span className="block text-[9px] font-normal text-stone-500 font-sans">
+                        [1st · Mid · Last Breakdown]
+                      </span>
+                    </td>
+                    <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">tax_id</td>
+                    <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">address_line1</td>
+                    <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">address_line2</td>
+                    <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">city</td>
+                    <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">state_province</td>
+                    <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">postal_code</td>
+                    <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">contact_normalized</td>
+                    <td className="py-2 px-3 font-mono whitespace-nowrap text-right">confidence_score</td>
+                  </tr>
+                </thead>
 
-              {/* Data Rows (Rows 2..N) */}
-              <tbody className="divide-y divide-stone-200/70 text-xs">
-                {filteredRecords.map((r, idx) => {
-                  const rowNumber = idx + 2;
-                  const isHealedPin = r.postal_code.includes("[HEALED]");
-                  const isHealedState = r.state_province.includes("[HEALED]");
+                {/* Data Rows (Rows 2..N) */}
+                <tbody className="divide-y divide-stone-200/70 text-xs">
+                  {filteredRecords.map((r, idx) => {
+                    const rowNumber = idx + 2;
+                    const isHealedPin = r.postal_code.includes("[HEALED]");
+                    const isHealedState = r.state_province.includes("[HEALED]");
+                    const nameInfo = getRecordNameInfo(r);
 
-                  return (
-                    <tr
-                      key={r.record_id}
-                      className="even:bg-[#fdfbf7] hover:bg-emerald-50/40 transition-colors group"
-                    >
-                      {/* Excel Row Coordinate Number */}
-                      <td className="w-10 py-2.5 px-2 text-center bg-[#f7f4ed] text-stone-500 text-[10px] border-r border-stone-200/80 font-mono select-none">
-                        {rowNumber}
-                      </td>
+                    return (
+                      <tr
+                        key={r.record_id}
+                        className="even:bg-[#fdfbf7] hover:bg-emerald-50/40 transition-colors group"
+                      >
+                        {/* Excel Row Coordinate Number */}
+                        <td className="w-10 py-2.5 px-2 text-center bg-[#f7f4ed] text-stone-500 text-[10px] border-r border-stone-200/80 font-mono select-none">
+                          {rowNumber}
+                        </td>
 
-                      {/* Col A: record_id */}
-                      <td className="py-2.5 px-3 border-r border-stone-200/80 font-semibold text-stone-900 whitespace-nowrap">
-                        {r.record_id}
-                      </td>
+                        {/* Col A: record_id */}
+                        <td className="py-2.5 px-3 border-r border-stone-200/80 font-semibold text-stone-900 whitespace-nowrap">
+                          {r.record_id}
+                        </td>
 
-                      {/* Col B: entity_type */}
-                      <td className="py-2.5 px-3 border-r border-stone-200/80 whitespace-nowrap">
-                        <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-stone-100 text-stone-800 border border-stone-300">
-                          {r.entity_type}
-                        </span>
-                      </td>
-
-                      {/* Col C: full_name_clean */}
-                      <td className="py-2.5 px-3 border-r border-stone-200/80 font-sans font-semibold text-stone-900 whitespace-nowrap">
-                        {r.full_name_clean}
-                      </td>
-
-                      {/* Col D: tax_id */}
-                      <td className="py-2.5 px-3 border-r border-stone-200/80 text-stone-600 whitespace-nowrap">
-                        {r.tax_id}
-                      </td>
-
-                      {/* Col E: address_line1 */}
-                      <td className="py-2.5 px-3 border-r border-stone-200/80 font-sans text-stone-700 whitespace-nowrap max-w-[220px] truncate" title={r.address_line1}>
-                        {r.address_line1}
-                      </td>
-
-                      {/* Col F: address_line2 */}
-                      <td className="py-2.5 px-3 border-r border-stone-200/80 font-sans text-stone-500 whitespace-nowrap max-w-[180px] truncate" title={r.address_line2}>
-                        {r.address_line2}
-                      </td>
-
-                      {/* Col G: city */}
-                      <td className="py-2.5 px-3 border-r border-stone-200/80 font-sans text-stone-800 whitespace-nowrap">
-                        {r.city}
-                      </td>
-
-                      {/* Col H: state_province */}
-                      <td className="py-2.5 px-3 border-r border-stone-200/80 font-sans whitespace-nowrap">
-                        <span className={isHealedState ? "text-stone-900 font-semibold" : "text-stone-700"}>
-                          {r.state_province.replace(" [HEALED]", "")}
-                        </span>
-                        {isHealedState && (
-                          <span className="ml-1 text-[9px] px-1 py-0.2 rounded bg-amber-100 text-amber-900 border border-amber-300">
-                            Healed
+                        {/* Col B: entity_type */}
+                        <td className="py-2.5 px-3 border-r border-stone-200/80 whitespace-nowrap">
+                          <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-stone-100 text-stone-800 border border-stone-300">
+                            {r.entity_type}
                           </span>
-                        )}
-                      </td>
+                        </td>
 
-                      {/* Col I: postal_code */}
-                      <td className="py-2.5 px-3 border-r border-stone-200/80 whitespace-nowrap">
-                        <span className={isHealedPin ? "text-stone-900 font-semibold" : "text-stone-700"}>
-                          {r.postal_code.replace(" [HEALED]", "")}
-                        </span>
-                        {isHealedPin && (
-                          <span className="ml-1 text-[9px] px-1 py-0.2 rounded bg-amber-100 text-amber-900 border border-amber-300">
-                            Healed
+                        {/* Col C: full_name_clean (With 1st, Mid, Last Name Analysis) */}
+                        <td className="py-2.5 px-3 border-r border-stone-200/80 font-sans text-stone-900 min-w-[220px]">
+                          <div className="flex items-center gap-1.5 font-semibold text-stone-900">
+                            {nameInfo.salutation && (
+                              <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-50 text-amber-900 font-mono border border-amber-200 font-bold">
+                                {nameInfo.salutation}
+                              </span>
+                            )}
+                            <span className="text-stone-900">{r.full_name_clean}</span>
+                          </div>
+
+                          {/* Decomposed Name Sub-Pills */}
+                          <div className="flex items-center gap-1 mt-1 text-[9px] font-mono flex-wrap">
+                            <span className="px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-900 border border-emerald-200" title="1st Name (Given / Forename)">
+                              1st: <strong className="font-semibold">{nameInfo.firstName}</strong>
+                            </span>
+                            {nameInfo.middleName && (
+                              <span className="px-1.5 py-0.2 rounded bg-stone-100 text-stone-700 border border-stone-200" title="Middle Name">
+                                Mid: <strong className="font-semibold">{nameInfo.middleName}</strong>
+                              </span>
+                            )}
+                            {nameInfo.lastName && (
+                              <span className="px-1.5 py-0.2 rounded bg-amber-50 text-amber-900 border border-amber-200" title="Last Name (Surname)">
+                                Last: <strong className="font-semibold">{nameInfo.lastName}</strong>
+                              </span>
+                            )}
+                            {nameInfo.relationship && (
+                              <span className="px-1.5 py-0.2 rounded bg-rose-50 text-rose-800 border border-rose-200 text-[8px]" title="Relationship / Care-Of">
+                                {nameInfo.relationship}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Col D: tax_id */}
+                        <td className="py-2.5 px-3 border-r border-stone-200/80 text-stone-600 whitespace-nowrap">
+                          {r.tax_id}
+                        </td>
+
+                        {/* Col E: address_line1 */}
+                        <td className="py-2.5 px-3 border-r border-stone-200/80 font-sans text-stone-700 whitespace-nowrap max-w-[220px] truncate" title={r.address_line1}>
+                          {r.address_line1}
+                        </td>
+
+                        {/* Col F: address_line2 */}
+                        <td className="py-2.5 px-3 border-r border-stone-200/80 font-sans text-stone-500 whitespace-nowrap max-w-[180px] truncate" title={r.address_line2}>
+                          {r.address_line2}
+                        </td>
+
+                        {/* Col G: city */}
+                        <td className="py-2.5 px-3 border-r border-stone-200/80 font-sans text-stone-800 whitespace-nowrap">
+                          {r.city}
+                        </td>
+
+                        {/* Col H: state_province */}
+                        <td className="py-2.5 px-3 border-r border-stone-200/80 font-sans whitespace-nowrap">
+                          <span className={isHealedState ? "text-stone-900 font-semibold" : "text-stone-700"}>
+                            {r.state_province.replace(" [HEALED]", "")}
                           </span>
-                        )}
-                      </td>
+                          {isHealedState && (
+                            <span className="ml-1 text-[9px] px-1 py-0.2 rounded bg-amber-100 text-amber-900 border border-amber-300">
+                              Healed
+                            </span>
+                          )}
+                        </td>
 
-                      {/* Col J: contact_normalized */}
-                      <td className="py-2.5 px-3 border-r border-stone-200/80 text-stone-700 whitespace-nowrap">
-                        {r.contact_normalized.replace(" [HEALED]", "")}
-                      </td>
+                        {/* Col I: postal_code */}
+                        <td className="py-2.5 px-3 border-r border-stone-200/80 whitespace-nowrap">
+                          <span className={isHealedPin ? "text-stone-900 font-semibold" : "text-stone-700"}>
+                            {r.postal_code.replace(" [HEALED]", "")}
+                          </span>
+                          {isHealedPin && (
+                            <span className="ml-1 text-[9px] px-1 py-0.2 rounded bg-amber-100 text-amber-900 border border-amber-300">
+                              Healed
+                            </span>
+                          )}
+                        </td>
 
-                      {/* Col K: confidence_score */}
-                      <td className="py-2.5 px-3 text-right whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800">
-                          <Check className="w-3 h-3 text-emerald-700" />
-                          {(r.confidence_score * 100).toFixed(1)}%
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        {/* Col J: contact_normalized */}
+                        <td className="py-2.5 px-3 border-r border-stone-200/80 text-stone-700 whitespace-nowrap">
+                          {r.contact_normalized.replace(" [HEALED]", "")}
+                        </td>
+
+                        {/* Col K: confidence_score */}
+                        <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800">
+                            <Check className="w-3 h-3 text-emerald-700" />
+                            {(r.confidence_score * 100).toFixed(1)}%
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            ) : (
+              /* SHEET 2: EXPLICIT 1ST, MIDDLE, LAST NAME DECOMPOSITION SPREADSHEET */
+              <table className="w-full text-left text-xs border-collapse font-mono">
+                <thead>
+                  {/* Excel Column Letters (A through I) */}
+                  <tr className="bg-[#ece7de] text-[10px] text-stone-500 font-semibold border-b border-stone-200 select-none">
+                    <th className="w-10 py-1 px-2 text-center border-r border-stone-200/80">◿</th>
+                    <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[130px]">A</th>
+                    <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[100px]">B</th>
+                    <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[180px]">C</th>
+                    <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[140px] bg-emerald-100/50">D</th>
+                    <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[130px] bg-emerald-100/50">E</th>
+                    <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[140px] bg-emerald-100/50">F</th>
+                    <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[100px]">G</th>
+                    <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[170px]">H</th>
+                    <th className="py-1 px-3 text-center min-w-[100px]">I</th>
+                  </tr>
+
+                  {/* Header Row */}
+                  <tr className="bg-[#f5f2eb] text-[11px] text-stone-800 font-bold border-b border-stone-300">
+                    <td className="w-10 py-2 px-2 text-center bg-[#ece7de] text-stone-500 text-[10px] border-r border-stone-300 font-mono select-none">
+                      1
+                    </td>
+                    <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">record_id</td>
+                    <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">entity_type</td>
+                    <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">full_name_clean</td>
+                    <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap text-emerald-900 bg-emerald-50/70 font-bold">
+                      1st_name (Given)
+                    </td>
+                    <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap text-stone-900 bg-stone-100/70 font-bold">
+                      middle_name
+                    </td>
+                    <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap text-amber-900 bg-amber-50/70 font-bold">
+                      last_name (Surname)
+                    </td>
+                    <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">salutation</td>
+                    <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">relationship / care_of</td>
+                    <td className="py-2 px-3 font-mono whitespace-nowrap text-right">confidence</td>
+                  </tr>
+                </thead>
+
+                {/* Data Rows */}
+                <tbody className="divide-y divide-stone-200/70 text-xs">
+                  {filteredRecords.map((r, idx) => {
+                    const rowNumber = idx + 2;
+                    const nameInfo = getRecordNameInfo(r);
+
+                    return (
+                      <tr
+                        key={r.record_id}
+                        className="even:bg-[#fdfbf7] hover:bg-emerald-50/40 transition-colors group"
+                      >
+                        {/* Row number */}
+                        <td className="w-10 py-2.5 px-2 text-center bg-[#f7f4ed] text-stone-500 text-[10px] border-r border-stone-200/80 font-mono select-none">
+                          {rowNumber}
+                        </td>
+
+                        {/* Col A */}
+                        <td className="py-2.5 px-3 border-r border-stone-200/80 font-semibold text-stone-900 whitespace-nowrap">
+                          {r.record_id}
+                        </td>
+
+                        {/* Col B */}
+                        <td className="py-2.5 px-3 border-r border-stone-200/80 whitespace-nowrap">
+                          <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-stone-100 text-stone-800 border border-stone-300">
+                            {r.entity_type}
+                          </span>
+                        </td>
+
+                        {/* Col C */}
+                        <td className="py-2.5 px-3 border-r border-stone-200/80 font-sans font-semibold text-stone-900 whitespace-nowrap">
+                          {r.full_name_clean}
+                        </td>
+
+                        {/* Col D: 1st Name */}
+                        <td className="py-2.5 px-3 border-r border-stone-200/80 font-sans font-bold text-emerald-900 bg-emerald-50/40 whitespace-nowrap">
+                          {nameInfo.firstName || "—"}
+                        </td>
+
+                        {/* Col E: Middle Name */}
+                        <td className="py-2.5 px-3 border-r border-stone-200/80 font-sans font-medium text-stone-700 bg-stone-50/40 whitespace-nowrap">
+                          {nameInfo.middleName || "—"}
+                        </td>
+
+                        {/* Col F: Last Name */}
+                        <td className="py-2.5 px-3 border-r border-stone-200/80 font-sans font-bold text-amber-900 bg-amber-50/40 whitespace-nowrap">
+                          {nameInfo.lastName || "—"}
+                        </td>
+
+                        {/* Col G: Salutation */}
+                        <td className="py-2.5 px-3 border-r border-stone-200/80 text-stone-600 whitespace-nowrap font-sans">
+                          {nameInfo.salutation ? (
+                            <span className="px-1.5 py-0.2 rounded bg-stone-100 text-stone-800 border border-stone-200">
+                              {nameInfo.salutation}
+                            </span>
+                          ) : (
+                            "—"
+                          )}
+                        </td>
+
+                        {/* Col H: Relationship */}
+                        <td className="py-2.5 px-3 border-r border-stone-200/80 text-stone-700 whitespace-nowrap font-sans">
+                          {nameInfo.relationship ? (
+                            <span className="px-1.5 py-0.2 rounded bg-rose-50 text-rose-800 border border-rose-200 text-[10px]">
+                              {nameInfo.relationship}
+                            </span>
+                          ) : (
+                            "—"
+                          )}
+                        </td>
+
+                        {/* Col I: Confidence */}
+                        <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800">
+                            <Check className="w-3 h-3 text-emerald-700" />
+                            {(r.confidence_score * 100).toFixed(1)}%
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
           </div>
 
           {/* Excel Sheet Footer Tab Bar */}
           <div className="bg-[#ece7de] px-4 py-2 border-t border-stone-300 flex items-center justify-between text-xs text-stone-600 select-none">
-            <div className="flex items-center gap-1">
-              <div className="px-3 py-1 rounded-t bg-white border-t-2 border-t-emerald-700 border-x border-stone-300 text-stone-900 font-semibold flex items-center gap-1.5 shadow-xs text-[11px]">
-                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setActiveSheet("11col")}
+                className={`px-3 py-1 rounded-t flex items-center gap-1.5 text-[11px] font-semibold cursor-pointer transition-all ${
+                  activeSheet === "11col"
+                    ? "bg-white border-t-2 border-t-emerald-700 border-x border-stone-300 text-stone-900 shadow-xs"
+                    : "bg-[#e2ded5] hover:bg-stone-200 text-stone-600 border border-transparent"
+                }`}
+              >
+                <FileSpreadsheet className={`w-3.5 h-3.5 ${activeSheet === "11col" ? "text-emerald-700" : "text-stone-500"}`} />
                 <span>Sheet1: 11_Column_Enterprise_Schema</span>
-              </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveSheet("nameAnalysis")}
+                className={`px-3 py-1 rounded-t flex items-center gap-1.5 text-[11px] font-semibold cursor-pointer transition-all ${
+                  activeSheet === "nameAnalysis"
+                    ? "bg-white border-t-2 border-t-emerald-700 border-x border-stone-300 text-stone-900 shadow-xs"
+                    : "bg-[#e2ded5] hover:bg-stone-200 text-stone-600 border border-transparent"
+                }`}
+              >
+                <User className={`w-3.5 h-3.5 ${activeSheet === "nameAnalysis" ? "text-emerald-700" : "text-stone-500"}`} />
+                <span>Sheet2: Name_Analysis (1st, Mid, Last)</span>
+              </button>
             </div>
 
-            <div className="text-[11px] font-mono text-stone-500">
-              Ready · {records.length} records · 11 fields · UTF-8
+            <div className="text-[11px] font-mono text-stone-500 hidden sm:block">
+              {activeSheet === "11col" ? "11 Fields Standard Schema" : "1st, Middle, Last Names Breakdown"} · {records.length} records · UTF-8
             </div>
           </div>
+        </Card>
+      )}
+
+      {/* 5b. Dedicated Entity Name Intelligence Breakdown Summary Card */}
+      {records.length > 0 && (
+        <Card className="border-stone-200/90 bg-white shadow-xs overflow-hidden">
+          <div className="bg-[#fcfaf6] px-5 py-3 border-b border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-lg bg-amber-100 border border-amber-300 flex items-center justify-center text-[#9a3412]">
+                <User className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-stone-900 font-sans">
+                  Entity Name Intelligence &amp; Decomposition Analysis
+                </h3>
+                <p className="text-[10px] text-stone-500 font-mono">
+                  Autonomous extraction of 1st Name (Given), Middle Name, Last Name (Surname), Salutations &amp; Relations
+                </p>
+              </div>
+            </div>
+            <span className="text-[10px] px-2 py-0.5 rounded-full font-mono bg-amber-50 text-amber-900 border border-amber-200 font-semibold self-start sm:self-center">
+              {records.length} Entities Analyzed
+            </span>
+          </div>
+
+          <CardContent className="p-4 sm:p-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {filteredRecords.slice(0, 6).map((r) => {
+                const nameInfo = getRecordNameInfo(r);
+                return (
+                  <div
+                    key={r.record_id}
+                    className="p-3 rounded-xl bg-[#fdfbf7] border border-stone-200/80 space-y-2 hover:border-amber-300 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono font-bold text-stone-500">
+                        {r.record_id}
+                      </span>
+                      <span className="text-[9px] px-1.5 py-0.2 rounded font-mono font-semibold bg-stone-100 text-stone-700 border border-stone-300">
+                        {r.entity_type}
+                      </span>
+                    </div>
+
+                    <div>
+                      <div className="text-xs font-bold text-stone-900 font-sans flex items-center gap-1.5">
+                        {nameInfo.salutation && (
+                          <span className="text-[9px] px-1 py-0.2 rounded bg-amber-100 text-amber-900 font-mono font-semibold">
+                            {nameInfo.salutation}
+                          </span>
+                        )}
+                        <span>{r.full_name_clean}</span>
+                      </div>
+                      {nameInfo.relationship && (
+                        <p className="text-[10px] text-stone-500 italic font-sans mt-0.5">
+                          {nameInfo.relationship}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="pt-1.5 border-t border-stone-200/70 grid grid-cols-3 gap-1.5 text-center font-mono">
+                      <div className="p-1 rounded bg-white border border-stone-200 shadow-2xs">
+                        <span className="block text-[8px] text-stone-400 uppercase font-sans">1st Name</span>
+                        <span className="text-[10px] font-bold text-emerald-900 truncate block">
+                          {nameInfo.firstName || "—"}
+                        </span>
+                      </div>
+                      <div className="p-1 rounded bg-white border border-stone-200 shadow-2xs">
+                        <span className="block text-[8px] text-stone-400 uppercase font-sans">Middle</span>
+                        <span className="text-[10px] font-bold text-stone-700 truncate block">
+                          {nameInfo.middleName || "—"}
+                        </span>
+                      </div>
+                      <div className="p-1 rounded bg-white border border-stone-200 shadow-2xs">
+                        <span className="block text-[8px] text-stone-400 uppercase font-sans">Last Name</span>
+                        <span className="text-[10px] font-bold text-amber-900 truncate block">
+                          {nameInfo.lastName || "—"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
         </Card>
       )}
 

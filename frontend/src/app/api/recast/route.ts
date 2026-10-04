@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { CleanEnterpriseRecord11Col, AuditStep, ReverseSchemaOutput, ParseResponse } from "@/lib/types";
+import { decomposeName } from "@/lib/nameUtils";
 
 // Fallback high-precision geospatial database for self-healing in Next.js runtime
 const GEO_DATABASE: Record<string, { city: string; state: string; pin: string }> = {
@@ -146,18 +147,12 @@ export async function POST(req: NextRequest) {
       const contacts = [phoneMatch?.[0], emailMatch?.[0]].filter(Boolean);
       let contactNorm = contacts.join(" | ") || "NOT_PROVIDED";
 
-      // Classification & Name
+      // Classification & Name Analysis (1st Name, Middle Name, Last Name, Salutation, Relationship)
       const isCo = /\b(pvt|ltd|enterprises|traders|sons|corp|co\.|industries|logistics|systems)\b/i.test(blk);
       const entityType = isCo ? 'ENTERPRISE' : 'INDIVIDUAL';
 
-      const firstLine = blk.split("\n")[0];
-      const nameCandidate = firstLine
-        .replace(/^(name|entity|customer|vendor|handwritten kyc:)[\s:.-]+/i, '')
-        .replace(/^(m\/s|shri|smt|mr\.|mrs\.)[\s.-]+/i, '')
-        .split(/,|\b(gali|road|street|plot|flat|c\/o)\b/i)[0]
-        .trim();
-      
-      const cleanName = nameCandidate ? nameCandidate.replace(/\w\S*/g, (txt: string) => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase()) : "Enterprise Entity";
+      const decomposed = decomposeName(blk, entityType);
+      const cleanName = decomposed.full_name_clean;
 
       // City / State / PIN detection
       let city = "NOT_PROVIDED";
@@ -247,6 +242,11 @@ export async function POST(req: NextRequest) {
         record_id: recId,
         entity_type: entityType,
         full_name_clean: finalName,
+        first_name: decomposed.first_name,
+        middle_name: decomposed.middle_name,
+        last_name: decomposed.last_name,
+        salutation: decomposed.salutation,
+        relationship: decomposed.relationship,
         tax_id: finalTax,
         address_line1: addr1,
         address_line2: addr2,

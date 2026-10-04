@@ -32,5 +32,13 @@ export const SAMPLE_DATASETS: EnterpriseSample[] = [
     badge: "High Precision",
     description: "Mixed multi-line procurement data with landmark signal navigation ('Near Sony World Signal') and missing PIN code.",
     raw_content: "CloudScale Systems Pvt Ltd, 4th Cross, Near Sony World Signal, Koramangala 4th Block, Bengaluru. Contact: +91 80 4123 4567, GSTIN: 29ABCDE1234F1Z5, billing@cloudscale.io"
+  },
+  {
+    id: "sample-hrms-kyc",
+    title: "Enterprise HRMS Master (1st, Mid & Last Names)",
+    category: "HRMS & Payroll KYC",
+    badge: "1st, Mid & Last Name",
+    description: "Multi-party payroll records with salutations, middle names, care-of relations, and unorganized address strings.",
+    raw_content: "Dr. Vikram Anand Patel s/o Mohanlal Patel, Flat 402 Silver Palms, Opposite Civil Hospital, Jaipur, Rajasthan. Mob: 9829012345, GSTIN: 08AABCP1234F1Z1, vikram.patel@health.in\n\nSmt Ananya Kumari Sharma w/o Rajesh Sharma, Plot 18 Near City Mall, Sector 21, Gurugram. Ph: 9810987654, ananya.sharma@corp.in"
   }
 ];

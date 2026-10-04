@@ -40,6 +40,13 @@ export interface CleanEnterpriseRecord11Col {
   vernacular_terms_resolved?: string[];
   raw_source_snippet?: string;
   record_hash?: string;
+
+  /** Name Decomposition & Analysis */
+  first_name?: string;
+  middle_name?: string;
+  last_name?: string;
+  salutation?: string;
+  relationship?: string;
 }
 
 export interface AuditStep {
