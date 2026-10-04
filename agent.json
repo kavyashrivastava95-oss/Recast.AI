@@ -1,0 +1,139 @@
+{
+  "$schema": "https://open-agent-spec.io/v1/schema.json",
+  "name": "recast-ai",
+  "displayName": "Recast Enterprise Migration Agent",
+  "version": "1.0.0",
+  "description": "Autonomous enterprise data migration and smart parsing agent converting unstructured legacy files, scanned forms, chaotic 1-line addresses, and Hinglish vernacular notes into standardized 11-column enterprise schemas.",
+  "license": "Apache-2.0",
+  "author": "Recast AI Engineering",
+  "repository": "https://github.com/recast-ai/recast-agent",
+  "entrypoint": {
+    "type": "fastapi",
+    "module": "backend.app.main:app",
+    "port": 8001,
+    "healthCheck": "/api/health"
+  },
+  "standard": "Agent-Skill-Open-Standard/1.0",
+  "runtime": {
+    "python": ">=3.11",
+    "node": ">=18.0.0"
+  },
+  "skills": [
+    {
+      "id": "recast-parse-legacy",
+      "name": "Autonomous Legacy Data Migration",
+      "description": "Ingests raw messy text, CSV, PDF, or scanned receipt data, runs OCR/Docling extraction, PII tokenization, Gemma 4 reasoning, and self-healing into an 11-column clean record.",
+      "inputs": {
+        "type": "object",
+        "properties": {
+          "raw_content": {
+            "type": "string",
+            "description": "Raw unformatted legacy record, messy address string, or document OCR text"
+          },
+          "file_name": {
+            "type": "string",
+            "description": "Source filename if applicable"
+          },
+          "privacy_guard": {
+            "type": "boolean",
+            "default": true,
+            "description": "Mask PII with cryptographic hashes before LLM reasoning"
+          },
+          "self_healing": {
+            "type": "boolean",
+            "default": true,
+            "description": "Auto-infer missing postal codes, states, and phone codes"
+          },
+          "vernacular_mode": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable Hinglish and regional vernacular address dictionary"
+          }
+        },
+        "required": ["raw_content"]
+      },
+      "outputs": {
+        "type": "object",
+        "properties": {
+          "records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/CleanEnterpriseRecord11Col"
+            }
+          },
+          "audit_trail": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/AuditStep"
+            }
+          },
+          "reverse_schema": {
+            "type": "object",
+            "properties": {
+              "sql_ddl": { "type": "string" },
+              "prisma_schema": { "type": "string" },
+              "pydantic_model": { "type": "string" },
+              "typescript_interface": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "CleanEnterpriseRecord11Col": {
+      "type": "object",
+      "properties": {
+        "record_id": { "type": "string", "description": "Unique deterministic enterprise ID (REC-XXXX-XXXX)" },
+        "entity_type": { "type": "string", "enum": ["INDIVIDUAL", "ENTERPRISE", "VENDOR", "LOGISTICS_HUB"] },
+        "full_name_clean": { "type": "string", "description": "Normalized Title-Cased Name" },
+        "tax_id": { "type": "string", "description": "Validated PAN, GSTIN, TIN, or Tax ID" },
+        "address_line1": { "type": "string", "description": "Door/Premise/House number + Road/Gali" },
+        "address_line2": { "type": "string", "description": "Locality, Sector, Landmark, Mohalla" },
+        "city": { "type": "string", "description": "Normalized City / Town" },
+        "state_province": { "type": "string", "description": "Standard State or Province" },
+        "postal_code": { "type": "string", "description": "Validated 6-digit PIN / Postal code (Self-Healed if missing)" },
+        "contact_normalized": { "type": "string", "description": "E.164 phone number and normalized email" },
+        "confidence_score": { "type": "number", "minimum": 0, "maximum": 1, "description": "Composite AI confidence rating" }
+      },
+      "required": [
+        "record_id",
+        "entity_type",
+        "full_name_clean",
+        "tax_id",
+        "address_line1",
+        "address_line2",
+        "city",
+        "state_province",
+        "postal_code",
+        "contact_normalized",
+        "confidence_score"
+      ]
+    },
+    "AuditStep": {
+      "type": "object",
+      "properties": {
+        "step_index": { "type": "integer" },
+        "stage": { "type": "string" },
+        "input_hash": { "type": "string" },
+        "output_hash": { "type": "string" },
+        "actor": { "type": "string" },
+        "status": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "details": { "type": "string" }
+      }
+    }
+  },
+  "weapons": [
+    "Zero-Shot Self-Healing (Predict & auto-fill missing fields like pincodes with Confidence Score badge)",
+    "GDPR Privacy Guard (Cryptographic token masking of PII before LLM reasoning)",
+    "Vernacular Parser (Hinglish, regional spellings, local address slangs)",
+    "Automated Audit Trail (Cryptographic SHA-256 state lineage and compliance transformation log)",
+    "Reverse-Schema Generator (Export SQL DDL, Prisma ORM, Pydantic, and TypeScript definitions)"
+  ],
+  "ci_cd_integration": {
+    "test_command": "pytest backend/tests",
+    "lint_command": "flake8 backend",
+    "docker_file": "backend/Dockerfile"
+  }
+}
