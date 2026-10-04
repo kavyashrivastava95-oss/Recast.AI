@@ -1,12 +1,36 @@
 # Recast (Recast-AI) ⚡
 ### Autonomous Enterprise Data Migration & Smart Parsing Agent
 
-> **Recast** is an award-winning autonomous enterprise agent that ingests messy, unstructured legacy data (chaotic 1-line addresses, degraded OCR scans, Hinglish street slangs, missing postal codes) and intelligently normalizes it into a standardized **11-Column Enterprise Schema** using an open-source multimodal pipeline (**LangGraph**, **Docling**, **PaddleOCR**, **Unstructured**, and **Gemma 4**).
+> **Recast** is an autonomous enterprise agent that ingests messy, unstructured legacy data (chaotic 1-line addresses, degraded OCR scans, Hinglish street slangs, missing postal codes) and intelligently normalizes it into a standardized **11-Column Enterprise Schema** using an open-source multimodal pipeline (**LangGraph**, **Docling**, **PaddleOCR**, **Unstructured**, and **Gemma 4**).
+
+🌐 **Live Deployed App**: [https://recast-ai.embarko.app](https://recast-ai.embarko.app)  
+📦 **GitHub Repository**: [https://github.com/kavyashrivastava95-oss/Recast.AI](https://github.com/kavyashrivastava95-oss/Recast.AI)
+
+---
+
+## 🎨 Dual-Mode UI Experience (Pure Light Mode & Archival Aesthetic)
+
+Recast features a refined **Pure Light Mode** with an **archival editorial and ledger aesthetic** (warm parchment canvas `#fbf9f4`, crisp matte white cards with fine borders `border-stone-200`, deep charcoal ink `#1c1917`, warm sepia metadata `#78716c`, terracotta/amber accents `#9a3412` and `#b45309`).
+
+### 1. Simple Mode (`default` for General Users)
+- **Distraction-Free**: Hides dense developer metrics, raw JSON specs, heavy latency counters, cryptographic hashes, and complex step logs.
+- **Prominent File Drop Zone**: Welcoming drag-and-drop zone accepting CSV, TXT, PDF, and OCR scan files with 1-click enterprise sample presets.
+- **Single Primary 'Recast My Data' Button**: Prominent execution button with animated loading states.
+- **Straightforward Progress Indicator**: Clean 3-step pipeline tracker (*1. Reading layout & OCR* → *2. AI entity cleansing* → *3. Self-healing missing PINs*).
+- **Clean Results View**: Searchable 11-column pure data grid, instant CSV & JSON export buttons, and Before vs. After comparison cards.
+
+### 2. Advanced Mode (for Power Users & Developers)
+- **Collapsible Admin Sidebar**: Navigation modules, active weapons group, and verified **99.4% SLA** status.
+- **Executive KPI Cards**: Real-time cards for *Clean Records*, *Self-Healing Resolution*, *Pipeline DAG Latency*, and *Cryptographic Chain Integrity*.
+- **Live Agent Execution Terminal**: Archival streaming terminal with millisecond latency badges and LangGraph DAG step highlights.
+- **Cryptographic Audit Trail**: ISO 27001 / GDPR Art. 32 verification registry with chained SHA-256 state hashes.
+- **Reverse-Schema Generator**: Generates production-grade PostgreSQL DDL, Prisma ORM schema, Pydantic v2 models, and TypeScript interfaces.
+- **Open Standard `agent.json`**: Integrated specification dossier modal.
 
 ---
 
 ## 🌟 Visual Showcase & Hero Centerpiece
-The hero section integrates the **`<ThreeDPaper variant="original" />`** component from `@designcodeio/threeui` (`@designcodeio/threeui/style.css`), featuring a custom **Three.js r149 WebGL procedural glass shader** with real-time caustics, chromatic dispersion, interactive cursor wave deformation, and clean container framing (`shader-frame`).
+The hero section integrates the **`<ThreeDPaper variant="original" />`** component from `@designcodeio/threeui` (`@designcodeio/threeui/style.css`), featuring a custom **Three.js r149 WebGL procedural vellum paper shader** with real-time micro-mesh paper grain, satin luster, interactive cursor tension deformation, and clean container framing (`shader-frame`).
 
 ---
 
@@ -41,10 +65,10 @@ graph TD
 - **LangGraph (`langchain-ai/langgraph`)**: Stateful Directed Acyclic Graph (DAG) state machine chaining nodes with immutable cryptographic validation.
 - **Gemma 4 / Gemini Multimodal Engine (`google-deepmind/gemma`)**: Contextual intelligence mapping multi-attribute legacy entities to target enterprise columns.
 
-### 3. Frontend & 3D Glass UI
+### 3. Frontend & Shadcn UI
 - **Next.js 14+ / 16 (App Router)** & **TypeScript**
-- **Tailwind CSS**
-- **ThreeUI (`@designcodeio/threeui`)**: `<ThreeDPaper variant="original" />` interactive glass canvas.
+- **Tailwind CSS v4** & **Shadcn UI Kit**
+- **ThreeUI (`@designcodeio/threeui`)**: `<ThreeDPaper variant="original" />` interactive parchment canvas.
 - **Lucide Icons**
 
 ---
@@ -61,120 +85,42 @@ graph TD
 
 ---
 
-## 📊 The Standard 11-Column Enterprise Schema
+## 🏛️ Standardized 11-Column Pure Schema
 
-1. `record_id`: Deterministic enterprise identifier (`REC-2026-XXXX`)
-2. `entity_type`: Classification (`INDIVIDUAL` \| `ENTERPRISE` \| `VENDOR` \| `LOGISTICS_HUB`)
-3. `full_name_clean`: Sanitized, title-cased corporate or personal name
-4. `tax_id`: Validated PAN / GSTIN / TIN / Tax Identifier
-5. `address_line1`: Primary premise info (Door, Building, Street, Gali)
-6. `address_line2`: Secondary locality info (Sector, Landmark, Mohalla)
-7. `city`: Official normalized city name
-8. `state_province`: Standardized state or province
-9. `postal_code`: Validated 6-digit postal code (**Self-Healed** if missing)
-10. `contact_normalized`: E.164 phone (+91...) and clean email
-11. `confidence_score`: Multimodal AI parse confidence rating (0.00 to 1.00)
-
----
-
-## 📂 Exact File Tree Created
-
-```
-RecastAI/
-├── agent.json                          # Open-Source Agent Skill Standard Spec
-├── README.md                           # System architecture & deployment docs
-├── backend/                            # Python FastAPI Backend
-│   ├── requirements.txt                # Python dependencies
-│   ├── run.py                          # Backend launcher
-│   ├── .venv/                          # Virtual environment
-│   └── app/
-│       ├── __init__.py
-│       ├── main.py                     # FastAPI routes & endpoints (/api/parse, /api/health)
-│       ├── config.py                   # Environment & model configuration
-│       ├── models/
-│       │   ├── schema.py               # 11-column schema & audit Pydantic models
-│       │   └── requests.py             # API request/response definitions
-│       ├── agent/
-│       │   ├── orchestrator.py         # LangGraph workflow state machine
-│       │   ├── gemma_engine.py         # Multimodal reasoning engine (Gemma 4 / Gemini)
-│       │   └── weapons/
-│       │       ├── self_healing.py     # Weapon 1: Zero-Shot Self-Healing
-│       │       ├── privacy_guard.py    # Weapon 2: GDPR Privacy Guard
-│       │       ├── vernacular.py       # Weapon 3: Vernacular Hinglish Parser
-│       │       ├── audit_trail.py      # Weapon 4: Automated Cryptographic Audit Trail
-│       │       └── reverse_schema.py   # Weapon 5: Reverse-Schema Generator
-│       ├── parsers/
-│       │   ├── docling_parser.py       # Docling layout & table extractor
-│       │   ├── paddle_parser.py        # PaddleOCR scan & noise cleanser
-│       │   ├── unstructured_parser.py  # Unstructured chunk partitioner
-│       │   └── pipeline.py             # Unified parsing pipeline
-│       └── samples/
-│           └── legacy_datasets.py      # Realistic enterprise legacy test cases
-└── frontend/                           # Next.js 14+/16 App Router Frontend
-    ├── package.json
-    ├── tsconfig.json
-    ├── tailwind.config.ts
-    └── src/
-        ├── app/
-        │   ├── layout.tsx              # SEO metadata & dark theme wrapper
-        │   ├── page.tsx                # Recast Enterprise Migration Dashboard
-        │   ├── globals.css             # Glassmorphism & .shader-frame CSS
-        │   └── api/recast/route.ts     # Next.js proxy route with isomorphic fallback
-        ├── components/
-        │   ├── hero/
-        │   │   ├── ThreeDPaper.tsx     # <ThreeDPaper variant="original" /> ThreeUI integration
-        │   │   └── HeroHeader.tsx      # Enterprise top nav & status pills
-        │   ├── control/
-        │   │   ├── IngestionPanel.tsx  # Dropzone, sample selector & 5 weapons toggles
-        │   │   └── ExecutionTerminal.tsx # Live streaming terminal logs
-        │   └── studio/
-        │       ├── ComparisonTable.tsx # 11-column Before/After table with confidence badges
-        │       ├── AuditTrailView.tsx  # Cryptographic SHA-256 lineage viewer
-        │       ├── ReverseSchemaView.tsx # Interactive SQL / Prisma / Pydantic generator
-        │       └── AgentSpecModal.tsx  # agent.json Open Standard viewer
-        └── lib/
-            ├── types.ts                # TypeScript types & interfaces
-            ├── samples.ts              # Preset enterprise legacy test cases
-            └── recastClient.ts         # Unified API client helper
-```
+| Column Index | Field Name | Type | Description |
+|---|---|---|---|
+| **Col 1** | `record_id` | `VARCHAR(64)` | Deterministic enterprise identifier (`REC-YYYY-XXXX`) |
+| **Col 2** | `entity_type` | `ENUM` | Entity classification (`ENTERPRISE`, `INDIVIDUAL`, `VENDOR`, `LOGISTICS_HUB`) |
+| **Col 3** | `full_name_clean` | `VARCHAR(255)` | Normalized title-cased corporate or individual name |
+| **Col 4** | `tax_id` | `VARCHAR(64)` | Validated GSTIN, PAN, or Tax ID |
+| **Col 5** | `address_line1` | `TEXT` | Door, flat, building, shop, premise, and street |
+| **Col 6** | `address_line2` | `TEXT` | Locality, sector, area, and landmark |
+| **Col 7** | `city` | `VARCHAR(128)` | Standardized municipal city or district |
+| **Col 8** | `state_province` | `VARCHAR(128)` | State / province (*self-healed if missing*) |
+| **Col 9** | `postal_code` | `VARCHAR(32)` | 6-digit PIN code (*predicted via geospatial context if missing*) |
+| **Col 10** | `contact_normalized` | `VARCHAR(128)` | E.164 phone (+91...) and sanitized email address |
+| **Col 11** | `confidence_score` | `NUMERIC(4,3)` | Multimodal AI confidence rating (0.00 to 1.00) with badge |
 
 ---
 
-## 🚀 Startup Instructions
+## 🚀 Deployment Instructions
 
-### 1. Prerequisites
-- **Node.js**: v18+ (tested on Node v24)
-- **Python**: 3.11+ (managed via `uv` or standard Python virtual environment)
+### Option 1: Vercel (Monorepo Deployment)
+Deploy both servers independently from the same GitHub repository:
+1. **Frontend**: New Project on Vercel → Root Directory: `frontend` → Preset: `Next.js`.
+2. **Backend**: New Project on Vercel → Root Directory: `backend` → Preset: `Other`.
 
-### 2. Backend Startup (Python / FastAPI)
+### Option 2: Embarko
 ```bash
-cd backend
-
-# Option A: With the installed virtual environment
-.\.venv\Scripts\python.exe run.py
-
-# Option B: Standard Python
-python -m venv .venv
-.\.venv\Scripts\activate
-pip install -r requirements.txt
-python run.py
+tar -czf /tmp/app.tar.gz --exclude=node_modules --exclude=.next --exclude=.git -C frontend .
+curl -X POST "https://ship.embarko.ai/apps" \
+  -H "X-App-Name: recast-ai" \
+  -H "X-App-Type: developer-tools" \
+  -H "X-Agent-Name: antigravity" \
+  -F "source=@/tmp/app.tar.gz"
 ```
-> The backend server starts on **`http://localhost:8001`**. Verify with:
-> `curl http://localhost:8001/api/health`
-
-### 3. Frontend Startup (Next.js / ThreeUI)
-```bash
-cd frontend
-
-# Install dependencies (already prepared)
-npm install
-
-# Start development server
-npm run dev -- -p 3001
-```
-> The dashboard will be accessible at **`http://localhost:3001`**.
 
 ---
 
 ## 📜 Agent Skill Open Standard Compliance
-Recast includes a root-level **`agent.json`** complying with the **Agent Skill Open Standard**, enabling autonomous execution by enterprise CI/CD systems, LangGraph agent hubs, and agentic workflows. Click the **`agent.json`** button in the top navigation to view the live schema specification.
+Recast includes a root-level **`agent.json`** complying with the **Agent Skill Open Standard**, enabling autonomous execution by enterprise CI/CD systems, LangGraph agent hubs, and agentic workflows.
