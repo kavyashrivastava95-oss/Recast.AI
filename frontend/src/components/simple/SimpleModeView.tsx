@@ -11,12 +11,12 @@ import {
   FileText,
   Sliders,
   Check,
-  Zap,
+  FileSpreadsheet,
 } from "lucide-react";
 import { CleanEnterpriseRecord11Col, EnterpriseSample } from "@/lib/types";
+import { exportToExcel, exportToCsv, exportToJson } from "@/lib/exportUtils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 interface SimpleModeViewProps {
   selectedContent: string;
@@ -35,6 +35,7 @@ interface SimpleModeViewProps {
 export const SimpleModeView: React.FC<SimpleModeViewProps> = ({
   selectedContent,
   onContentChange,
+  selectedFileName,
   samples,
   onSelectSample,
   isRunning,
@@ -67,21 +68,26 @@ export const SimpleModeView: React.FC<SimpleModeViewProps> = ({
     reader.readAsText(file);
   };
 
+  const handleExportExcelDirect = () => {
+    exportToExcel(records, "recast_11col_clean_records.xls");
+  };
+
   const filteredRecords = records.filter(
     (r) =>
       r.full_name_clean.toLowerCase().includes(searchTerm.toLowerCase()) ||
       r.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.record_id.toLowerCase().includes(searchTerm.toLowerCase())
+      r.record_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.tax_id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto py-2 animate-fadeIn">
+    <div className="space-y-8 max-w-5xl mx-auto py-2 animate-fadeIn font-sans">
       {/* 1. Welcoming Hero Title */}
       <div className="text-center space-y-3 max-w-2xl mx-auto pt-2">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 shadow-xs">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-50 border border-amber-200 shadow-xs">
           <Sparkles className="w-3.5 h-3.5 text-[#9a3412]" />
           <span className="text-xs font-semibold text-amber-900 font-sans">
-            Simple Mode · Easy Data Recasting
+            Simple Mode · 1-Click Excel Recasting
           </span>
         </div>
 
@@ -94,7 +100,7 @@ export const SimpleModeView: React.FC<SimpleModeViewProps> = ({
 
         <p className="text-sm sm:text-base text-stone-600 font-sans leading-relaxed">
           Upload any unstructured address file, messy spreadsheet, or scanned receipt notes.
-          Recast autonomously cleanses, fixes missing PIN codes, and structures your records.
+          Recast autonomously cleanses, fixes missing PIN codes, and outputs an Excel sheet ready for enterprise ERP.
         </p>
       </div>
 
@@ -173,6 +179,11 @@ export const SimpleModeView: React.FC<SimpleModeViewProps> = ({
               <span className="flex items-center gap-1.5 font-semibold text-stone-700">
                 <FileText className="w-3.5 h-3.5 text-[#9a3412]" />
                 Input Data Preview / Direct Paste:
+                {selectedFileName && (
+                  <span className="text-[11px] font-normal text-stone-500 bg-stone-100 px-2 py-0.5 rounded border border-stone-200">
+                    {selectedFileName}
+                  </span>
+                )}
               </span>
               <span>{selectedContent.length} characters</span>
             </div>
@@ -255,7 +266,7 @@ export const SimpleModeView: React.FC<SimpleModeViewProps> = ({
         </Card>
       )}
 
-      {/* Success Status Banner when completed */}
+      {/* Success Status Banner with One-Click Excel Download */}
       {!isRunning && records.length > 0 && (
         <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200/90 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fadeIn">
           <div className="flex items-center gap-3">
@@ -264,117 +275,243 @@ export const SimpleModeView: React.FC<SimpleModeViewProps> = ({
             </div>
             <div>
               <p className="font-bold text-emerald-950 text-sm font-sans">
-                Successfully Cleansed {records.length} Records!
+                Successfully Cleansed {records.length} Records into 11 Columns!
               </p>
               <p className="text-xs text-emerald-800 font-sans mt-0.5">
-                All records structured into clean 11-column pure schemas with missing fields healed.
+                Formatted as a complete Excel spreadsheet with all 11 enterprise fields validated.
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
+            {/* Primary Excel Download Button */}
+            <Button
+              onClick={handleExportExcelDirect}
+              size="sm"
+              className="bg-emerald-700 hover:bg-emerald-800 text-white border border-emerald-800 shadow-sm font-semibold"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-100" />
+              <span>Download Excel (.xls)</span>
+            </Button>
             <Button
               onClick={onExportCsv}
               size="sm"
-              className="bg-white hover:bg-stone-50 text-stone-900 border border-stone-200 shadow-xs"
+              variant="outline"
+              className="bg-white hover:bg-stone-50 text-stone-800 border-stone-200"
             >
               <Download className="w-3.5 h-3.5 text-stone-500" />
-              <span>Download CSV</span>
+              <span>CSV</span>
             </Button>
             <Button
               onClick={onExportJson}
               size="sm"
-              className="bg-white hover:bg-stone-50 text-stone-900 border border-stone-200 shadow-xs"
+              variant="outline"
+              className="bg-white hover:bg-stone-50 text-stone-800 border-stone-200"
             >
               <Download className="w-3.5 h-3.5 text-stone-500" />
-              <span>Download JSON</span>
+              <span>JSON</span>
             </Button>
           </div>
         </div>
       )}
 
-      {/* 5. Clean Results Data Preview (Simple Mode Table) */}
+      {/* =========================================================================
+          5. EXCEL SPREADSHEET COMPONENT (Proper 11 Schema Data View)
+          ========================================================================= */}
       {records.length > 0 && (
-        <Card className="border-stone-200/90 shadow-[0_2px_16px_rgba(28,25,23,0.04)] bg-white overflow-hidden">
-          <div className="p-5 pb-3 border-b border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h3 className="font-serif text-lg font-bold text-stone-900">
-                Cleaned Data Results ({records.length})
-              </h3>
-              <p className="text-xs text-stone-500 font-sans">
-                Standardized 11-column pure entities ready for export
-              </p>
+        <Card className="border-stone-200/90 shadow-[0_4px_24px_rgba(28,25,23,0.04)] bg-white overflow-hidden">
+          {/* Excel Ribbon & Toolbar */}
+          <div className="bg-[#f5f2eb] px-4 py-3 border-b border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex items-center justify-center w-7 h-7 rounded bg-[#107c41] text-white shadow-xs">
+                <FileSpreadsheet className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-stone-900 text-xs font-mono">
+                    Recast_Clean_11_Columns.xlsx
+                  </span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded font-mono bg-emerald-100 text-emerald-900 border border-emerald-300 font-semibold">
+                    11 Schema Fields
+                  </span>
+                </div>
+                <span className="text-[10px] text-stone-500 font-sans">
+                  Interactive Excel Sheet Preview · {records.length} Rows × 11 Columns
+                </span>
+              </div>
             </div>
 
+            {/* Toolbar Actions */}
             <div className="flex items-center gap-2">
-              <div className="relative w-48 sm:w-56">
-                <Search className="w-3.5 h-3.5 text-stone-400 absolute left-2.5 top-2.5 pointer-events-none" />
+              <div className="relative w-44 sm:w-52">
+                <Search className="w-3.5 h-3.5 text-stone-400 absolute left-2.5 top-2 pointer-events-none" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Filter results..."
-                  className="w-full h-8 pl-8 pr-3 rounded-lg bg-[#fcfaf6] border border-stone-200 text-xs text-stone-900 placeholder:text-stone-400 outline-none focus:border-[#9a3412]"
+                  placeholder="Filter cells..."
+                  className="w-full h-7 pl-8 pr-2.5 rounded bg-white border border-stone-300 text-xs text-stone-900 placeholder:text-stone-400 outline-none focus:border-emerald-700 shadow-xs"
                 />
               </div>
+
+              <Button
+                onClick={handleExportExcelDirect}
+                size="sm"
+                className="h-7 px-2.5 text-xs bg-emerald-700 hover:bg-emerald-800 text-white border border-emerald-800 shadow-xs gap-1 font-semibold"
+                title="Download this exact Excel sheet"
+              >
+                <Download className="w-3 h-3 text-emerald-200" />
+                <span>Export</span>
+              </Button>
 
               <Button
                 variant="outline"
                 size="sm"
                 onClick={onSwitchToAdvanced}
-                className="gap-1.5 text-stone-700 hover:text-stone-900"
+                className="h-7 px-2.5 text-xs text-stone-700 hover:text-stone-900 border-stone-300"
               >
-                <Sliders className="w-3.5 h-3.5 text-[#9a3412]" />
-                <span className="hidden sm:inline">Advanced View</span>
+                <Sliders className="w-3 h-3 text-[#9a3412]" />
+                <span className="hidden sm:inline">Advanced</span>
               </Button>
             </div>
           </div>
 
-          {/* Simple Clean Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+          {/* Excel Formula Bar */}
+          <div className="bg-[#fcfaf6] px-4 py-1.5 border-b border-stone-200/80 flex items-center gap-3 text-[11px] font-mono text-stone-600">
+            <span className="font-bold text-stone-700 select-none">fx</span>
+            <div className="h-3.5 w-[1px] bg-stone-300" />
+            <span className="text-stone-500 truncate">
+              =RECAST_CLEAN_SCHEMA(source: &quot;legacy_data&quot;, columns: 11, status: &quot;VALIDATED&quot;)
+            </span>
+          </div>
+
+          {/* Excel Sheet Grid */}
+          <div className="overflow-x-auto max-h-[460px] overflow-y-auto">
+            <table className="w-full text-left text-xs border-collapse font-mono">
               <thead>
-                <tr className="border-b border-stone-200 bg-[#f5f2eb] text-[11px] uppercase tracking-wider text-stone-700 font-mono font-semibold">
-                  <th className="py-2.5 px-3">Name</th>
-                  <th className="py-2.5 px-3">Address</th>
-                  <th className="py-2.5 px-3">City & State</th>
-                  <th className="py-2.5 px-3">PIN Code</th>
-                  <th className="py-2.5 px-3">Contact</th>
-                  <th className="py-2.5 px-3 text-right">Status</th>
+                {/* Excel Column Letters (A through K) */}
+                <tr className="bg-[#ece7de] text-[10px] text-stone-500 font-semibold border-b border-stone-200 select-none">
+                  <th className="w-10 py-1 px-2 text-center border-r border-stone-200/80">◿</th>
+                  <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[130px]">A</th>
+                  <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[100px]">B</th>
+                  <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[180px]">C</th>
+                  <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[130px]">D</th>
+                  <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[200px]">E</th>
+                  <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[180px]">F</th>
+                  <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[120px]">G</th>
+                  <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[130px]">H</th>
+                  <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[110px]">I</th>
+                  <th className="py-1 px-3 border-r border-stone-200/80 text-center min-w-[150px]">J</th>
+                  <th className="py-1 px-3 text-center min-w-[110px]">K</th>
+                </tr>
+
+                {/* 11 Proper Schema Headers (Row 1) */}
+                <tr className="bg-[#f5f2eb] text-[11px] text-stone-800 font-bold border-b border-stone-300">
+                  <td className="w-10 py-2 px-2 text-center bg-[#ece7de] text-stone-500 text-[10px] border-r border-stone-300 font-mono select-none">
+                    1
+                  </td>
+                  <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">record_id</td>
+                  <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">entity_type</td>
+                  <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">full_name_clean</td>
+                  <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">tax_id</td>
+                  <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">address_line1</td>
+                  <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">address_line2</td>
+                  <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">city</td>
+                  <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">state_province</td>
+                  <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">postal_code</td>
+                  <td className="py-2 px-3 border-r border-stone-200 font-mono whitespace-nowrap">contact_normalized</td>
+                  <td className="py-2 px-3 font-mono whitespace-nowrap text-right">confidence_score</td>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-200/80 text-stone-800 text-xs font-sans">
-                {filteredRecords.map((r) => {
-                  const isHealed = r.postal_code.includes("[HEALED]");
+
+              {/* Data Rows (Rows 2..N) */}
+              <tbody className="divide-y divide-stone-200/70 text-xs">
+                {filteredRecords.map((r, idx) => {
+                  const rowNumber = idx + 2;
+                  const isHealedPin = r.postal_code.includes("[HEALED]");
+                  const isHealedState = r.state_province.includes("[HEALED]");
+
                   return (
-                    <tr key={r.record_id} className="hover:bg-amber-50/40 transition-colors">
-                      <td className="py-3 px-3 font-semibold text-stone-900 whitespace-nowrap">
-                        {r.full_name_clean}
-                        <span className="block text-[10px] text-stone-500 font-mono">{r.record_id}</span>
+                    <tr
+                      key={r.record_id}
+                      className="even:bg-[#fdfbf7] hover:bg-emerald-50/40 transition-colors group"
+                    >
+                      {/* Excel Row Coordinate Number */}
+                      <td className="w-10 py-2.5 px-2 text-center bg-[#f7f4ed] text-stone-500 text-[10px] border-r border-stone-200/80 font-mono select-none">
+                        {rowNumber}
                       </td>
-                      <td className="py-3 px-3 max-w-[200px] truncate text-stone-700">
-                        {r.address_line1}, {r.address_line2}
+
+                      {/* Col A: record_id */}
+                      <td className="py-2.5 px-3 border-r border-stone-200/80 font-semibold text-stone-900 whitespace-nowrap">
+                        {r.record_id}
                       </td>
-                      <td className="py-3 px-3 whitespace-nowrap text-stone-800">
-                        {r.city}, {r.state_province.replace(" [HEALED]", "")}
-                      </td>
-                      <td className="py-3 px-3 whitespace-nowrap font-mono">
-                        <span className="font-semibold text-stone-900">
-                          {r.postal_code.replace(" [HEALED]", "")}
+
+                      {/* Col B: entity_type */}
+                      <td className="py-2.5 px-3 border-r border-stone-200/80 whitespace-nowrap">
+                        <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-stone-100 text-stone-800 border border-stone-300">
+                          {r.entity_type}
                         </span>
-                        {isHealed && (
-                          <span className="ml-1 text-[9px] px-1 py-0.2 rounded bg-amber-100 text-amber-900 border border-amber-300 font-mono">
+                      </td>
+
+                      {/* Col C: full_name_clean */}
+                      <td className="py-2.5 px-3 border-r border-stone-200/80 font-sans font-semibold text-stone-900 whitespace-nowrap">
+                        {r.full_name_clean}
+                      </td>
+
+                      {/* Col D: tax_id */}
+                      <td className="py-2.5 px-3 border-r border-stone-200/80 text-stone-600 whitespace-nowrap">
+                        {r.tax_id}
+                      </td>
+
+                      {/* Col E: address_line1 */}
+                      <td className="py-2.5 px-3 border-r border-stone-200/80 font-sans text-stone-700 whitespace-nowrap max-w-[220px] truncate" title={r.address_line1}>
+                        {r.address_line1}
+                      </td>
+
+                      {/* Col F: address_line2 */}
+                      <td className="py-2.5 px-3 border-r border-stone-200/80 font-sans text-stone-500 whitespace-nowrap max-w-[180px] truncate" title={r.address_line2}>
+                        {r.address_line2}
+                      </td>
+
+                      {/* Col G: city */}
+                      <td className="py-2.5 px-3 border-r border-stone-200/80 font-sans text-stone-800 whitespace-nowrap">
+                        {r.city}
+                      </td>
+
+                      {/* Col H: state_province */}
+                      <td className="py-2.5 px-3 border-r border-stone-200/80 font-sans whitespace-nowrap">
+                        <span className={isHealedState ? "text-stone-900 font-semibold" : "text-stone-700"}>
+                          {r.state_province.replace(" [HEALED]", "")}
+                        </span>
+                        {isHealedState && (
+                          <span className="ml-1 text-[9px] px-1 py-0.2 rounded bg-amber-100 text-amber-900 border border-amber-300">
                             Healed
                           </span>
                         )}
                       </td>
-                      <td className="py-3 px-3 whitespace-nowrap font-mono text-stone-700">
+
+                      {/* Col I: postal_code */}
+                      <td className="py-2.5 px-3 border-r border-stone-200/80 whitespace-nowrap">
+                        <span className={isHealedPin ? "text-stone-900 font-semibold" : "text-stone-700"}>
+                          {r.postal_code.replace(" [HEALED]", "")}
+                        </span>
+                        {isHealedPin && (
+                          <span className="ml-1 text-[9px] px-1 py-0.2 rounded bg-amber-100 text-amber-900 border border-amber-300">
+                            Healed
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Col J: contact_normalized */}
+                      <td className="py-2.5 px-3 border-r border-stone-200/80 text-stone-700 whitespace-nowrap">
                         {r.contact_normalized.replace(" [HEALED]", "")}
                       </td>
-                      <td className="py-3 px-3 text-right whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-300">
+
+                      {/* Col K: confidence_score */}
+                      <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800">
                           <Check className="w-3 h-3 text-emerald-700" />
-                          Clean
+                          {(r.confidence_score * 100).toFixed(1)}%
                         </span>
                       </td>
                     </tr>
@@ -383,13 +520,27 @@ export const SimpleModeView: React.FC<SimpleModeViewProps> = ({
               </tbody>
             </table>
           </div>
+
+          {/* Excel Sheet Footer Tab Bar */}
+          <div className="bg-[#ece7de] px-4 py-2 border-t border-stone-300 flex items-center justify-between text-xs text-stone-600 select-none">
+            <div className="flex items-center gap-1">
+              <div className="px-3 py-1 rounded-t bg-white border-t-2 border-t-emerald-700 border-x border-stone-300 text-stone-900 font-semibold flex items-center gap-1.5 shadow-xs text-[11px]">
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
+                <span>Sheet1: 11_Column_Enterprise_Schema</span>
+              </div>
+            </div>
+
+            <div className="text-[11px] font-mono text-stone-500">
+              Ready · {records.length} records · 11 fields · UTF-8
+            </div>
+          </div>
         </Card>
       )}
 
       {/* 6. Simple Before / After Story Card */}
       {records.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="bg-[#fff8f6] border-red-200/80">
+          <Card className="bg-[#fff8f6] border-red-200/80 shadow-xs">
             <CardContent className="p-4 space-y-1.5">
               <span className="text-[10px] uppercase font-bold text-rose-900 font-mono tracking-wider">
                 Before: Unstructured Raw Input
@@ -400,7 +551,7 @@ export const SimpleModeView: React.FC<SimpleModeViewProps> = ({
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-stone-200">
+          <Card className="bg-white border-stone-200 shadow-xs">
             <CardContent className="p-4 space-y-1.5">
               <span className="text-[10px] uppercase font-bold text-[#9a3412] font-mono tracking-wider">
                 After: Standardized 11-Column Record
